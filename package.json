@@ -1,0 +1,14 @@
+{
+  "name": "nutrition-program",
+  "version": "1.0.0",
+  "description": "This is a site for choosing a nutrition program",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "alexandr buklov",
+  "license": "ISC",
+  "devDependencies": {
+    "json-server": "^0.17.3"
+  }
+}

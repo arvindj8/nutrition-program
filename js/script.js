@@ -6,7 +6,6 @@ window.addEventListener('DOMContentLoaded', () => {
         tabContent = document.querySelectorAll('.tabcontent'),
         tabParent = document.querySelector('.tabheader__items')
 
-
     function hideTabContent() {
         tabContent.forEach(item => {
             item.classList.add('hide')
@@ -63,9 +62,9 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function addZeroDateTime(datetime) {
+    function addZeroNum(num) {
         let result
-        datetime >= 0 && datetime < 10 ? result = `0${datetime}` : result = datetime
+        num >= 0 && num < 10 ? result = `0${num}` : result = num
 
         return result
     }
@@ -84,10 +83,10 @@ window.addEventListener('DOMContentLoaded', () => {
         function updateClock() {
             const t = getClock(endtime)
 
-            days.textContent = addZeroDateTime(t.days)
-            hours.innerHTML = addZeroDateTime(t.hours)
-            minutes.innerHTML = addZeroDateTime(t.minutes)
-            seconds.innerHTML = addZeroDateTime(t.seconds)
+            days.textContent = addZeroNum(t.days)
+            hours.innerHTML = addZeroNum(t.hours)
+            minutes.innerHTML = addZeroNum(t.minutes)
+            seconds.innerHTML = addZeroNum(t.seconds)
 
             if (t.total <= 0) {
                 clearInterval(timeInterval)
@@ -285,50 +284,76 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // Slider
+
+    const prevSlide = document.querySelector('.offer__slider-prev'),
+        nextSlide = document.querySelector('.offer__slider-next'),
+        currentSlide = document.querySelector('#current'),
+        totalSlides = document.querySelector('#total'),
+        slides = document.querySelectorAll('.offer__slide'),
+        sliderWrapper = document.querySelector('.offer__slider-wrapper'),
+        slideInner = document.querySelector('.offer__slider-inner'),
+        slideWidth = window.getComputedStyle(sliderWrapper).width
+
     let currentSlideIndex = 1
+    let offset = 0
 
-    const slider = document.querySelector('.offer__slider'),
-        prevSlide = slider.querySelector('.offer__slider-prev'),
-        nextSlide = slider.querySelector('.offer__slider-next'),
-        currentSlide = slider.querySelector('#current'),
-        totalSlides = slider.querySelector('#total'),
-        slides = slider.querySelectorAll('.offer__slide')
-
-
-    showSlide(currentSlideIndex)
-
-
-    function showSlide(currentSlideIndex) {
-        currentSlide.textContent = addZeroDateTime(currentSlideIndex)
-        slides.forEach((slide, i= 0) => {
-            slide.classList.add('hide')
-
-            if (i === currentSlideIndex - 1) {
-                slide.classList.toggle('hide')
-                slide.classList.add('fade')
-            }
-        })
+    // add zero's for num < 10
+    function checkCountSlides() {
+        if (slides.length < 10) {
+            totalSlides.textContent = addZeroNum(slides.length)
+            currentSlide.textContent = addZeroNum(currentSlideIndex)
+        }
     }
 
-    function changeSlide(slides) {
-        totalSlides.textContent = addZeroDateTime(slides.length)
+    checkCountSlides()
 
-        nextSlide.addEventListener('click', () => {
-            if (currentSlideIndex <= slides.length - 1) {
-                currentSlideIndex += 1
-                showSlide(currentSlideIndex)
-            }
-        })
+    // set starting properties for slider
+    function setPropertiesSlider() {
+        slides.forEach(slide => slide.style.width = slideWidth)
 
-        prevSlide.addEventListener('click', () => {
-            if (currentSlideIndex > 1) {
-                currentSlideIndex --
-                showSlide(currentSlideIndex)
-            }
-        })
+        slideInner.style.cssText = `
+        width: ${100 * slides.length}%;
+        display: flex;
+        transition: 0.5s all;
+    `
+        sliderWrapper.style.overflow = 'hidden'
     }
 
-    changeSlide(slides)
+    setPropertiesSlider()
+
+    // shift slides to next
+    nextSlide.addEventListener('click', () => {
+        if (offset === +slideWidth.slice(0, slideWidth.length -2) * (slides.length - 1)) {
+            offset = 0
+        } else {
+            offset += +slideWidth.slice(0, slideWidth.length -2)
+        }
+
+        if (currentSlideIndex === slides.length) {
+            currentSlideIndex = 1
+        } else {
+            currentSlideIndex++
+        }
+        checkCountSlides()
+        slideInner.style.transform = `translateX(-${offset}px)`
+    })
+
+    // shift slides to back
+    prevSlide.addEventListener('click', () => {
+        if (offset === 0) {
+            offset = +slideWidth.slice(0, slideWidth.length -2) * (slides.length - 1)
+        } else {
+            offset -= +slideWidth.slice(0, slideWidth.length -2)
+        }
+
+        if (currentSlideIndex === 1) {
+            currentSlideIndex = slides.length
+        } else {
+            currentSlideIndex--
+        }
+        checkCountSlides()
+        slideInner.style.transform = `translateX(-${offset}px)`
+    })
 })
 
 

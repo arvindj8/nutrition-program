@@ -40,7 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    // Timer
+    // Timer //
 
     const deadline = '2023-04-21'
 
@@ -97,7 +97,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     setClock('.timer', deadline)
 
-    // Modal
+    // Modal //
 
     const modalTrigger = document.querySelectorAll('[data-modal]'),
         modal = document.querySelector('.modal')
@@ -146,7 +146,7 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', openModalScroll)
 
 
-    // Cards
+    // Cards //
 
     class Card {
         constructor(src, alt, title, description, price, parentSelector, ...classes) {
@@ -205,7 +205,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }))
 
 
-    // Form
+    // Form //
 
     const forms = document.querySelectorAll('form')
 
@@ -283,19 +283,53 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000)
     }
 
-    // Slider
+    // Slider //
 
     const prevSlide = document.querySelector('.offer__slider-prev'),
         nextSlide = document.querySelector('.offer__slider-next'),
+        slider = document.querySelector('.offer__slider'),
         currentSlide = document.querySelector('#current'),
         totalSlides = document.querySelector('#total'),
         slides = document.querySelectorAll('.offer__slide'),
         sliderWrapper = document.querySelector('.offer__slider-wrapper'),
         slideInner = document.querySelector('.offer__slider-inner'),
-        slideWidth = window.getComputedStyle(sliderWrapper).width
+        slideWidth = window.getComputedStyle(sliderWrapper).width,
+        allDots = []
 
     let currentSlideIndex = 1
+
     let offset = 0
+
+    slider.style.position = 'relative'
+
+    // add dots to slider
+    const dotWrapper = document.createElement('ol')
+    dotWrapper.classList.add('carousel-indicators')
+    slider.append(dotWrapper)
+
+    for (let i = 0; i < slides.length; i++) {
+        const dot = document.createElement('li')
+        dot.setAttribute('data-slide-to', i + 1)
+        dot.classList.add('dot')
+        dotWrapper.append(dot)
+        allDots.push(dot)
+
+        if (i === 0) {
+            dot.classList.add('dot__active')
+        }
+    }
+
+    // changes actives dots
+    function changeDotsSlide() {
+        allDots.forEach(dot => {
+            dot.classList.add('dot')
+            if (dot.classList.contains('dot__active')) {
+                dot.classList.toggle('dot__active')
+                allDots[currentSlideIndex - 1].classList.toggle('dot__active')
+            }
+        })
+    }
+
 
     // add zero's for num < 10
     function checkCountSlides() {
@@ -321,39 +355,80 @@ window.addEventListener('DOMContentLoaded', () => {
 
     setPropertiesSlider()
 
-    // shift slides to next
-    nextSlide.addEventListener('click', () => {
-        if (offset === +slideWidth.slice(0, slideWidth.length -2) * (slides.length - 1)) {
-            offset = 0
+    // checking offset slide
+    function checkOffset(isNext=true) {
+        if (isNext === true) {
+            if (offset === +slideWidth.replace(/\D/g, '') * (slides.length - 1)) {
+                offset = 0;
+            } else {
+                offset += +slideWidth.slice(0, slideWidth.length - 2);
+            }
         } else {
-            offset += +slideWidth.slice(0, slideWidth.length -2)
+            if (offset === 0) {
+                offset = +slideWidth.replace(/\D/g, '') * (slides.length - 1)
+            } else {
+                offset -= +slideWidth.replace(/\D/g, '')
+            }
         }
+    }
+
+    // switching slides to next
+    function switchNextSlide() {
+        checkOffset()
+        slideInner.style.transform = `translateX(-${offset}px)`
 
         if (currentSlideIndex === slides.length) {
             currentSlideIndex = 1
         } else {
             currentSlideIndex++
         }
-        checkCountSlides()
-        slideInner.style.transform = `translateX(-${offset}px)`
-    })
 
-    // shift slides to back
-    prevSlide.addEventListener('click', () => {
-        if (offset === 0) {
-            offset = +slideWidth.slice(0, slideWidth.length -2) * (slides.length - 1)
-        } else {
-            offset -= +slideWidth.slice(0, slideWidth.length -2)
-        }
+        checkCountSlides()
+        changeDotsSlide()
+    }
+
+    // switching slides to prev
+    function switchPrevSlide() {
+        checkOffset(false)
+        slideInner.style.transform = `translateX(-${offset}px)`
 
         if (currentSlideIndex === 1) {
             currentSlideIndex = slides.length
         } else {
             currentSlideIndex--
         }
+
         checkCountSlides()
-        slideInner.style.transform = `translateX(-${offset}px)`
+        changeDotsSlide()
+    }
+
+    // next slide
+    nextSlide.addEventListener('click', () => {
+        switchNextSlide()
     })
+
+    // prev slide
+    prevSlide.addEventListener('click', () => {
+        switchPrevSlide()
+    })
+
+    // switching slides by dots
+   function switchDotSlide() {
+       allDots.forEach(dot => {
+           dot.addEventListener('click', (e) => {
+               const dotSLideTo = +e.target.getAttribute('data-slide-to')
+               currentSlideIndex = dotSLideTo
+
+               offset = +slideWidth.replace(/\D/g, '') * (dotSLideTo - 1)
+               slideInner.style.transform = `translateX(-${offset}px)`
+
+               checkCountSlides()
+               changeDotsSlide()
+           })
+       })
+   }
+
+    switchDotSlide()
 })
 
 
